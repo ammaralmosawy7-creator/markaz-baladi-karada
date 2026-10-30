@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مركز بلدي الكرادة</title>
+
+  <!-- Google Fonts - Cairo (Arabic) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== TOP GOV BREADCRUMB BAR ===== -->
+  <div class="gov-breadcrumb">
+    <div class="gov-breadcrumb-inner">
+
+      <!-- Level 1 -->
+      <div class="gov-level">
+        <img src="logo.jpg" alt="" class="gov-level-icon" />
+        <span class="gov-level-text">جمهورية العراق</span>
+      </div>
+
+      <span class="gov-sep">›</span>
+
+      <!-- Level 2 -->
+      <div class="gov-level">
+        <img src="logo.jpg" alt="" class="gov-level-icon" />
+        <span class="gov-level-text">أمانة بغداد</span>
+      </div>
+
+      <span class="gov-sep">›</span>
+
+      <!-- Level 3 -->
+      <div class="gov-level gov-level-active">
+        <img src="logo.jpg" alt="" class="gov-level-icon" />
+        <span class="gov-level-text">دائرة بلدية الكرادة</span>
+      </div>
+
+      <span class="gov-sep">›</span>
+
+      <!-- Level 4 — Current -->
+      <div class="gov-level gov-level-current">
+        <span class="gov-level-dot"></span>
+        <span class="gov-level-text gov-level-text-current">مركز بلدي الكرادة</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== HEADER ===== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="logo-area">
+        <img src="logo.jpg" alt="أمانة بغداد" class="logo-img" />
+        <div class="logo-text-block">
+          <span class="logo-sub">دائرة بلدية الكرادة</span>
+          <span class="logo-main">مركز بلدي الكرادة</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- زر لوحة المستخدمين (للمدير) -->
+        <button id="usersBtn" class="header-action-btn admin-only hidden" onclick="openUsersModal()" title="إدارة المستخدمين">
+          <span>👥 المستخدمين</span>
+        </button>
+
+        <!-- زر الحساب / تسجيل الدخول -->
+        <button id="authBtn" class="header-action-btn" onclick="openLoginModal()">
+          <span id="userAvatar">👤</span>
+          <span id="userNameDisplay">تسجيل الدخول</span>
+        </button>
+
+        <button id="themeToggle" class="theme-btn" onclick="toggleTheme()">
+          <span id="themeIcon">🌙</span>
+          <span id="themeLabel">الوضع الداكن</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN PAGE ===== -->
+  <main id="mainPage" class="page active">
+
+    <!-- Hero Banner -->
+    <div class="hero-banner">
+      <img src="logo.jpg" alt="شعار أمانة بغداد" class="hero-logo" />
+      <div class="hero-text">
+        <p class="hero-sup">جمهورية العراق — بغداد العراق</p>
+        <h1 class="hero-title">مركز بلدي الكرادة</h1>
+        <p class="hero-sub">أمانة بغداد — مدينة السلام</p>
+        <div class="hero-divider"></div>
+        <p class="hero-hint">اختر الشعبة المطلوبة</p>
+      </div>
+    </div>
+
+    <!-- ===== ADMIN HIERARCHY CARD ===== -->
+    <div class="hierarchy-card">
+      <div class="hierarchy-title">📋 التسلسل الإداري</div>
+      <div class="hierarchy-chain">
+
+        <div class="hc-node hc-root">
+          <img src="logo.jpg" alt="" class="hc-logo" />
+          <div class="hc-info">
+            <span class="hc-label">جمهورية العراق</span>
+          </div>
+        </div>
+
+        <div class="hc-connector">
+          <div class="hc-line"></div>
+          <div class="hc-arrow">▼</div>
+        </div>
+
+        <div class="hc-node hc-lvl2">
+          <img src="logo.jpg" alt="" class="hc-logo" />
+          <div class="hc-info">
+            <span class="hc-label">أمانة بغداد</span>
+            <span class="hc-sub">Baghdad Mayoralty</span>
+          </div>
+        </div>
+
+        <div class="hc-connector">
+          <div class="hc-line"></div>
+          <div class="hc-arrow">▼</div>
+        </div>
+
+        <div class="hc-node hc-lvl3">
+          <img src="logo.jpg" alt="" class="hc-logo" />
+          <div class="hc-info">
+            <span class="hc-label">دائرة بلدية الكرادة</span>
+            <span class="hc-sub">Karada Municipal Directorate</span>
+          </div>
+        </div>
+
+        <div class="hc-connector">
+          <div class="hc-line"></div>
+          <div class="hc-arrow">▼</div>
+        </div>
+
+        <div class="hc-node hc-current">
+          <div class="hc-current-pulse"></div>
+          <img src="logo.jpg" alt="" class="hc-logo hc-logo-current" />
+          <div class="hc-info">
+            <span class="hc-label hc-label-current">مركز بلدي الكرادة</span>
+            <span class="hc-sub">Karada Municipal Center</span>
+            <span class="hc-badge-current">📍 أنت هنا</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="departments-grid">
+      <div class="dept-card violations" onclick="goTo('violations')">
+        <div class="dept-icon-wrap violations-icon">
+          <span>⚠️</span>
+        </div>
+        <h2>شعبة التجاوزات</h2>
+        <p>إدارة المخالفات والتجاوزات العمرانية</p>
+        <div class="card-arrow">←</div>
+      </div>
+      <div class="dept-card cleaning" onclick="goTo('cleaning')">
+        <div class="dept-icon-wrap cleaning-icon">
+          <span>🧹</span>
+        </div>
+        <h2>شعبة النظافة</h2>
+        <p>متابعة خدمات النظافة والبيئة</p>
+        <div class="card-arrow">←</div>
+      </div>
+    </div>
+
+    <footer class="app-footer">
+      <img src="logo.jpg" alt="" class="footer-logo" />
+      <span>مركز بلدي الكرادة &copy; 2025 — أمانة بغداد</span>
+    </footer>
+  </main>
+
+  <!-- ===== شعبة التجاوزات PAGE ===== -->
+  <main id="violationsPage" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="goTo('main')">&#8594; رجوع</button>
+      <div class="page-header-center">
+        <img src="logo.jpg" alt="" class="page-logo" />
+        <h2 class="page-title">⚠️ شعبة التجاوزات</h2>
+      </div>
+      <div class="header-right-btns">
+        <div class="view-toggle-wrap">
+          <button id="btnViewCards" class="view-toggle-btn active" onclick="switchViolationView('cards')" title="عرض البطاقات">🎴 بطاقات</button>
+          <button id="btnViewTable" class="view-toggle-btn" onclick="switchViolationView('table')" title="عرض جدول تفصيلي">📊 جدول تفصيلي</button>
+        </div>
+        <button class="add-btn" onclick="openViolationModal()">+ إضافة مخالفة</button>
+      </div>
+    </div>
+
+    <!-- ===== محرك البحث العميق والمتقدم ===== -->
+    <div class="deep-search-card">
+      <div class="deep-search-header">
+        <div class="dsh-title">
+          <span>🔎</span>
+          <h3>البحث العميق والتصفية المتقدمة للمخالفات</h3>
+        </div>
+        <button class="btn-clear-filter" onclick="clearDeepSearch()">إعادة ضبط البحث</button>
+      </div>
+
+      <div class="deep-search-inputs">
+        <!-- 1. بحث عام أو عنوان -->
+        <div class="ds-col">
+          <label>📍 عنوان أو موقع المخالفة</label>
+          <input type="text" id="searchAddressInput" placeholder="اكتب الشارع، المحلة، الزقاق، العنوان..." oninput="triggerDeepSearch()" />
+        </div>
+
+        <!-- 2. نوع المخالفة -->
+        <div class="ds-col">
+          <label>⚠️ نوع المخالفة</label>
+          <select id="searchTypeInput" onchange="triggerDeepSearch()">
+            <option value="">كافة الأنواع</option>
+            <option value="تجاوز الحدود">تجاوز الحدود</option>
+            <option value="البناء دون إجازة">البناء دون إجازة</option>
+            <option value="تغيير الاستخدام">تغيير الاستخدام</option>
+            <option value="البناء فوق الطابق المرخص">البناء فوق الطابق المرخص</option>
+            <option value="التعدي على الأراضي الحكومية">التعدي على الأراضي الحكومية</option>
+            <option value="أخرى">أخرى</option>
+          </select>
+        </div>
+
+        <!-- 3. إجازة البناء -->
+        <div class="ds-col">
+          <label>📜 إجازة البناء</label>
+          <select id="searchPermitInput" onchange="triggerDeepSearch()">
+            <option value="">الكل</option>
+            <option value="yes">توجد إجازة</option>
+            <option value="no">لا توجد إجازة</option>
+          </select>
+        </div>
+
+        <!-- 4. الإجراء المتخذ -->
+        <div class="ds-col">
+          <label>⚖️ الإجراء المتخذ</label>
+          <select id="searchProcedureInput" onchange="triggerDeepSearch()">
+            <option value="">كافة الإجراءات</option>
+            <option value="رصد">👁️ رصد</option>
+            <option value="غرامة">💰 غرامة</option>
+            <option value="إنذار">📢 إنذار</option>
+          </select>
+        </div>
+
+        <!-- 5. المستندات وموقع GPS -->
+        <div class="ds-col">
+          <label>📎 المستندات وموقع GPS</label>
+          <select id="searchDocsGpsInput" onchange="triggerDeepSearch()">
+            <option value="">الكل</option>
+            <option value="with_docs">تحتوي على مستندات مرفقة</option>
+            <option value="with_gps">محدد إحداثيات GPS</option>
+            <option value="without_gps">بدون إحداثيات GPS</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="deep-search-results-bar">
+        <span id="searchResultsCount">يتم عرض كافة المخالفات</span>
+      </div>
+    </div>
+
+    <!-- عرض البطاقات (Cards View) -->
+    <div class="violations-list" id="violationsList">
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>لا توجد مخالفات مسجلة حتى الآن</p>
+        <button class="add-btn-empty" onclick="openViolationModal()">+ إضافة أول مخالفة</button>
+      </div>
+    </div>
+
+    <!-- عرض الجدول التفصيلي (Table View) -->
+    <div class="violations-table-wrap hidden" id="violationsTableWrap">
+      <table class="violations-full-table">
+        <thead>
+          <tr>
+            <th>ت</th>
+            <th>عنوان وموقع المخالفة</th>
+            <th>نوع المخالفة</th>
+            <th>إجازة البناء</th>
+            <th>الإجراءات المتخذة</th>
+            <th>مستندات الإجراءات</th>
+            <th>موقع GPS</th>
+            <th>تاريخ التسجيل</th>
+            <th>الإجراء</th>
+          </tr>
+        </thead>
+        <tbody id="violationsTableBody">
+          <!-- يملأ ديناميكياً -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- ===== شعبة النظافة PAGE ===== -->
+  <main id="cleaningPage" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="goTo('main')">&#8594; رجوع</button>
+      <div class="page-header-center">
+        <img src="logo.jpg" alt="" class="page-logo" />
+        <h2 class="page-title">🧹 شعبة النظافة</h2>
+      </div>
+      <div></div>
+    </div>
+    <div class="coming-soon">
+      <div class="coming-icon">🚧</div>
+      <p>قيد التطوير</p>
+    </div>
+  </main>
+
+  <!-- ===== VIOLATION MODAL ===== -->
+  <div id="violationModal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <img src="logo.jpg" alt="" class="modal-logo" />
+          <h3>📝 إضافة مخالفة جديدة</h3>
+        </div>
+        <button class="close-modal" onclick="closeViolationModal()">✕</button>
+      </div>
+
+      <form id="violationForm" onsubmit="submitViolation(event)">
+
+        <!-- 1. العنوان -->
+        <div class="form-group">
+          <label>1️⃣ العنوان</label>
+          <input type="text" id="vAddress" placeholder="أدخل عنوان موقع المخالفة..." required />
+        </div>
+
+        <!-- 2. GPS -->
+        <div class="form-group">
+          <label>📍 الموقع الجغرافي (GPS)</label>
+          <div class="gps-toolbar">
+            <button type="button" class="gps-btn gps-locate" onclick="locateMe()">
+              📡 تحديد موقعي الحالي
+            </button>
+            <button type="button" class="gps-btn gps-search-btn" onclick="searchAddress()">
+              🔍 بحث بالعنوان
+            </button>
+            <div class="gps-search-wrap" id="searchWrap">
+              <input type="text" id="searchInput" placeholder="ابحث عن موقع..." />
+              <button type="button" class="gps-do-search" onclick="doSearch()">بحث</button>
+            </div>
+          </div>
+          <div class="map-hint">🖱️ انقر على الخريطة لتحديد موقع المخالفة</div>
+          <div id="violationMap" class="map-container"></div>
+          <div class="coords-display" id="coordsDisplay">
+            <span id="coordsText">لم يتم تحديد الموقع بعد</span>
+            <a id="openGoogleMaps" class="open-maps-link hidden" target="_blank">🗺️ فتح في Google Maps</a>
+          </div>
+        </div>
+
+        <!-- 3. نوع المخالفة -->
+        <div class="form-group">
+          <label>2️⃣ نوع المخالفة</label>
+          <select id="vType" required>
+            <option value="">-- اختر نوع المخالفة --</option>
+            <option>تجاوز الحدود</option>
+            <option>البناء دون إجازة</option>
+            <option>تغيير الاستخدام</option>
+            <option>البناء فوق الطابق المرخص</option>
+            <option>التعدي على الأراضي الحكومية</option>
+            <option>أخرى</option>
+          </select>
+        </div>
+
+        <!-- 4. إجازة البناء -->
+        <div class="form-group">
+          <label>3️⃣ إجازة البناء</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="permit" value="yes" onchange="togglePermit(true)" />
+              <span class="radio-custom"></span>✅ توجد إجازة بناء
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="permit" value="no" onchange="togglePermit(false)" checked />
+              <span class="radio-custom"></span>❌ لا توجد إجازة بناء
+            </label>
+          </div>
+          <div id="permitUpload" class="sub-upload hidden">
+            <label class="upload-label" for="permitFile">
+              <span class="upload-icon">📄</span>
+              <span id="permitFileName">ارفق نسخة من الإجازة</span>
+            </label>
+            <input type="file" id="permitFile" accept=".pdf,.jpg,.jpeg,.png"
+                   onchange="showFileName('permitFile','permitFileName')" />
+          </div>
+        </div>
+
+        <!-- 5. الإجراءات -->
+        <div class="form-group">
+          <label>4️⃣ الإجراءات المتخذة</label>
+          <div class="checkbox-group">
+            <label class="check-option">
+              <input type="checkbox" value="رصد" /><span class="check-custom"></span>👁️ رصد
+            </label>
+            <label class="check-option">
+              <input type="checkbox" value="غرامة" /><span class="check-custom"></span>💰 غرامة مالية
+            </label>
+            <label class="check-option">
+              <input type="checkbox" value="إنذار" /><span class="check-custom"></span>📢 إنذار رسمي
+            </label>
+          </div>
+        </div>
+
+        <!-- 6. المستندات -->
+        <div class="form-group">
+          <label>5️⃣ ارفاق المستندات المتعلقة بالإجراءات</label>
+          <label class="upload-label" for="docsFiles">
+            <span class="upload-icon">📎</span>
+            <span id="docsFileName">اختر ملف أو أكثر (PDF، صورة...)</span>
+          </label>
+          <input type="file" id="docsFiles" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                 onchange="showFileName('docsFiles','docsFileName')" />
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-save">💾 حفظ المخالفة</button>
+          <button type="button" class="btn-cancel" onclick="closeViolationModal()">إلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MAP VIEW MODAL ===== -->
+  <div id="mapViewModal" class="modal-overlay hidden">
+    <div class="modal-box modal-box-map">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <img src="logo.jpg" alt="" class="modal-logo" />
+          <h3 id="mapViewTitle">📍 موقع المخالفة</h3>
+        </div>
+        <button class="close-modal" onclick="closeMapView()">✕</button>
+      </div>
+      <div id="viewMap" class="map-container map-container-full"></div>
+      <div class="map-view-footer">
+        <a id="viewGoogleMaps" class="open-maps-link-big" target="_blank">🗺️ فتح في Google Maps</a>
+        <span id="viewCoords" class="view-coords-text"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LOGIN / OTP MODAL ===== -->
+  <div id="loginModal" class="modal-overlay hidden">
+    <div class="modal-box modal-box-auth">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <img src="logo.jpg" alt="" class="modal-logo" />
+          <h3 id="authModalTitle">🔐 تسجيل الدخول عبر واتساب</h3>
+        </div>
+        <button class="close-modal" onclick="closeLoginModal()">✕</button>
+      </div>
+
+      <!-- Step 1: إدخال رقم الهاتف -->
+      <div id="loginStepPhone" class="auth-step">
+        <p class="auth-desc">أدخل رقم الهاتف المسجل لتلقي كود التحقق السريع عبر تطبيق <strong>WhatsApp</strong>:</p>
+        <div class="form-group">
+          <label>📱 رقم الهاتف</label>
+          <div class="phone-input-wrap">
+            <span class="country-prefix">🇮🇶 +964</span>
+            <input type="tel" id="loginPhoneInput" placeholder="07XXXXXXXXX" dir="ltr" />
+          </div>
+        </div>
+        <button type="button" class="btn-save btn-block" onclick="sendOtpCode()">
+          📲 إرسال رمز التحقق عبر واتساب
+        </button>
+      </div>
+
+      <!-- Step 2: إدخال رمز التحقق -->
+      <div id="loginStepOtp" class="auth-step hidden">
+        <p class="auth-desc">تم إرسال كود التحقق إلى واتساب الخاص بالرقم: <span id="sentPhoneDisplay" class="highlight-text"></span></p>
+        <div class="form-group">
+          <label>🔑 كود التحقق (6 أرقام)</label>
+          <input type="text" id="loginOtpInput" placeholder="• • • • • •" maxlength="6" class="otp-input" dir="ltr" />
+        </div>
+        <div id="demoOtpAlert" class="demo-otp-box hidden"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-save" onclick="verifyOtpCode()">✅ تأكيد الدخول</button>
+          <button type="button" class="btn-cancel" onclick="backToPhoneStep()">تغيير الرقم</button>
+        </div>
+      </div>
+
+      <!-- Step 3: بروفايل المستخدم المسجل -->
+      <div id="loginStepProfile" class="auth-step hidden">
+        <div class="profile-card">
+          <div class="profile-avatar">👤</div>
+          <h4 id="profName">--</h4>
+          <span id="profRoleBadge" class="badge">--</span>
+          <p id="profPhone" class="prof-detail">📱 --</p>
+          <p id="profDept" class="prof-detail">🏛️ --</p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel btn-danger-text" onclick="logoutUser()">🚪 تسجيل الخروج</button>
+          <button type="button" class="btn-save" onclick="closeLoginModal()">إغلاق</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== USERS MANAGEMENT MODAL (ADMIN ONLY) ===== -->
+  <div id="usersModal" class="modal-overlay hidden">
+    <div class="modal-box modal-box-large">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <img src="logo.jpg" alt="" class="modal-logo" />
+          <h3>👥 إدارة المستخدمين وصلاحيات النظام</h3>
+        </div>
+        <button class="close-modal" onclick="closeUsersModal()">✕</button>
+      </div>
+
+      <div class="users-content">
+        <!-- نموذج إضافة مستخدم جديد -->
+        <div class="add-user-box">
+          <h4>➕ إضافة مستخدم جديد للنظام</h4>
+          <form id="addUserForm" onsubmit="createUser(event)">
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label>الاسم الكامل</label>
+                <input type="text" id="newUserName" placeholder="مثلاً: علي حسن كاظم" required />
+              </div>
+              <div class="form-group flex-1">
+                <label>رقم الهاتف (واتساب)</label>
+                <input type="tel" id="newUserPhone" placeholder="07XXXXXXXXX" dir="ltr" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label>الصلاحية</label>
+                <select id="newUserRole">
+                  <option value="admin">مدير نظام (كامل الصلاحيات + إدارة المستخدمين)</option>
+                  <option value="supervisor">مشرف (إضافة، تعديل، حذف، تقارير)</option>
+                  <option value="inspector" selected>مراقب / راصد ميداني (إضافة مخالفات فقط)</option>
+                  <option value="observer">مشاهد فقط (اطلاع واستعلام)</option>
+                </select>
+              </div>
+              <div class="form-group flex-1">
+                <label>الشعبة التابع لها</label>
+                <select id="newUserDept">
+                  <option value="all">كافة الشعب</option>
+                  <option value="violations">شعبة التجاوزات</option>
+                  <option value="cleaning">شعبة النظافة</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-save">+ حفظ وتفعيل المستخدم</button>
+          </form>
+        </div>
+
+        <!-- قائمة المستخدمين الحالية -->
+        <div class="users-list-section">
+          <h4>📋 المستخدمين المسجلين في النظام</h4>
+          <div id="usersTableWrap" class="users-table-wrap">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>الاسم</th>
+                  <th>رقم الهاتف</th>
+                  <th>الصلاحية</th>
+                  <th>الشعبة</th>
+                  <th>تاريخ الإضافة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <!-- يُملأ برمجياً -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
