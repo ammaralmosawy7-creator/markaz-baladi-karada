@@ -7,16 +7,10 @@ compatibility_date = "2024-01-01"
 pages_build_output_dir = "."
 
 # ──────────────────────────────────────────
-#  D1 Database  (violations metadata)
+#  D1 Database  (Violations, files Base64, users)
+#  100% Free - No R2 subscription needed
 # ──────────────────────────────────────────
 [[d1_databases]]
-binding     = "DB"
+binding       = "DB"
 database_name = "karada-violations"
 database_id   = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
-
-# ──────────────────────────────────────────
-#  R2 Bucket  (file / image storage)
-# ──────────────────────────────────────────
-[[r2_buckets]]
-binding     = "FILES"
-bucket_name = "karada-files"

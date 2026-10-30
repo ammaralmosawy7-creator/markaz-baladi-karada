@@ -252,7 +252,43 @@ document.getElementById('mapViewModal').addEventListener('click', function(e) {
   if (e.target === this) closeMapView();
 });
 
-function submitViolation(e) {
+// Helper: تحويل ملف متصفح إلى Base64 Data URL محلياً
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
+
+// تحميل المخالفات من السيرفر السحابي (D1) مع دعم التخزين المحلي في حال عدم الاتصال
+async function fetchViolationsFromAPI() {
+  try {
+    const res = await fetch('/api/violations');
+    const data = await res.json();
+    if (data.ok && Array.isArray(data.violations)) {
+      violations = data.violations;
+      renderViolations();
+      return;
+    }
+  } catch (err) {
+    console.warn('Backend not available, using local cache:', err);
+  }
+
+  // استخدام البيانات المخزنة محلياً كـ Fallback
+  const cached = localStorage.getItem('karada_violations_cache');
+  if (cached) {
+    try {
+      violations = JSON.parse(cached);
+    } catch (e) {
+      violations = [];
+    }
+  }
+  renderViolations();
+}
+
+async function submitViolation(e) {
   e.preventDefault();
 
   const address    = document.getElementById('vAddress').value.trim();
@@ -263,21 +299,92 @@ function submitViolation(e) {
   const permitInput= document.getElementById('permitFile');
   const docsCount  = docsInput.files ? docsInput.files.length : 0;
 
-  const violation = {
-    id:         Date.now(),
-    address,
-    type,
-    permit,
-    procedures,
-    docsCount,
-    permitFile: (permit === 'yes' && permitInput.files.length > 0) ? permitInput.files[0].name : null,
-    lat:        selectedLat,
-    lng:        selectedLng,
-    date:       new Date().toLocaleDateString('ar-IQ', { year:'numeric', month:'short', day:'numeric' })
-  };
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const originalBtnText = submitBtn.innerHTML;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '⏳ جاري الحفظ والتشفير...';
 
-  violations.unshift(violation);
-  renderViolations();
+  // تحضير FormData لإرساله مباشرة إلى Backend / Cloudflare Pages Function
+  const formData = new FormData();
+  formData.append('address', address);
+  formData.append('type', type);
+  formData.append('permit', permit);
+  formData.append('procedures', JSON.stringify(procedures));
+  if (selectedLat) formData.append('lat', selectedLat);
+  if (selectedLng) formData.append('lng', selectedLng);
+
+  if (permit === 'yes' && permitInput.files.length > 0) {
+    formData.append('permitFile', permitInput.files[0]);
+  }
+
+  if (docsInput.files) {
+    for (let i = 0; i < docsInput.files.length; i++) {
+      formData.append('docs', docsInput.files[i]);
+    }
+  }
+
+  let savedSuccessfully = false;
+
+  try {
+    const res = await fetch('/api/violations', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (data.ok) {
+      savedSuccessfully = true;
+      await fetchViolationsFromAPI();
+    }
+  } catch (err) {
+    console.warn('Could not post to /api/violations directly, saving locally with Base64:', err);
+  }
+
+  // إذا لم يتصل بالسيرفر (مثلاً تشغيل محلي بدون wrangler)، نقوم بحفظ الملفات كـ Base64 محلياً
+  if (!savedSuccessfully) {
+    let localPermitData = null;
+    let localPermitName = null;
+    if (permit === 'yes' && permitInput.files.length > 0) {
+      localPermitName = permitInput.files[0].name;
+      localPermitData = await readFileAsBase64(permitInput.files[0]);
+    }
+
+    const localDocs = [];
+    if (docsInput.files) {
+      for (let i = 0; i < docsInput.files.length; i++) {
+        const f = docsInput.files[i];
+        const b64 = await readFileAsBase64(f);
+        localDocs.push({
+          id: Date.now() + i,
+          name: f.name,
+          type: f.type,
+          size: f.size,
+          data: b64
+        });
+      }
+    }
+
+    const violation = {
+      id:         Date.now(),
+      address,
+      type,
+      permit,
+      procedures,
+      docsCount:  localDocs.length,
+      permitFile: localPermitName,
+      permitFileData: localPermitData,
+      docs:       localDocs,
+      lat:        selectedLat,
+      lng:        selectedLng,
+      date:       new Date().toLocaleDateString('ar-IQ', { year:'numeric', month:'short', day:'numeric' })
+    };
+
+    violations.unshift(violation);
+    localStorage.setItem('karada_violations_cache', JSON.stringify(violations));
+    renderViolations();
+  }
+
+  submitBtn.disabled = false;
+  submitBtn.innerHTML = originalBtnText;
   closeViolationModal();
 }
 
@@ -395,7 +502,12 @@ function renderViolations() {
           : `<span class="badge" style="border-color:#5a6480;color:#8891a4">📍 بدون إحداثيات</span>`
       ].join('');
 
-      const docsText = v.docsCount > 0 ? `📎 ${v.docsCount} مستند مرفق` : '';
+      const docsText = v.docsCount > 0 
+        ? `<button class="table-doc-tag" style="cursor:pointer;" onclick="openDocsModal(${originalIdx})">📎 ${v.docsCount} مستند مرفق</button>` 
+        : '';
+      const permitFileLink = v.permitFile
+        ? `<button class="table-doc-tag" style="cursor:pointer;" onclick="openDocsModal(${originalIdx})">📄 إجازة: ${v.permitFile}</button>`
+        : '';
       const gpsText  = v.lat ? `🌐 ${v.lat.toFixed(5)}, ${v.lng.toFixed(5)}` : '';
 
       return `
@@ -405,7 +517,7 @@ function renderViolations() {
             <div class="vc-meta">
               <span>🔹 <strong>النوع:</strong> ${v.type}</span>
               ${docsText ? `<span>${docsText}</span>` : ''}
-              ${v.permitFile ? `<span>📄 إجازة: ${v.permitFile}</span>` : ''}
+              ${permitFileLink ? `<span>${permitFileLink}</span>` : ''}
               ${gpsText ? `<span style="font-family:monospace">${gpsText}</span>` : ''}
             </div>
             <div class="vc-badges">${badgesHtml}</div>
@@ -427,7 +539,7 @@ function renderViolations() {
         : 'لا توجد';
 
       const permitBadge = v.permit === 'yes'
-        ? `<span class="badge badge-permit">✅ مجاز ${v.permitFile ? `<small>(${v.permitFile})</small>` : ''}</span>`
+        ? `<span class="badge badge-permit" style="cursor:pointer;" onclick="openDocsModal(${originalIdx})">✅ مجاز ${v.permitFile ? `<small>(${v.permitFile})</small>` : ''}</span>`
         : `<span class="badge badge-nopermit">❌ غير مجاز</span>`;
 
       const gpsBtn = v.lat
@@ -435,7 +547,7 @@ function renderViolations() {
         : `<span style="color:var(--text3);font-size:0.8rem;">غير محدد</span>`;
 
       const docsSummary = (v.docsCount && v.docsCount > 0)
-        ? `<span class="table-doc-tag">📎 ${v.docsCount} ملفات</span>`
+        ? `<button class="table-doc-tag" style="cursor:pointer;" onclick="openDocsModal(${originalIdx})">📎 ${v.docsCount} ملفات</button>`
         : `<span style="color:var(--text3);font-size:0.8rem;">لا توجد</span>`;
 
       return `
@@ -511,12 +623,134 @@ function closeMapView() {
 /* ==============================
    DELETE VIOLATION
 ============================== */
-function deleteViolation(idx) {
-  if (confirm('هل تريد حذف هذه المخالفة؟')) {
-    violations.splice(idx, 1);
-    renderViolations();
+async function deleteViolation(idx) {
+  if (!confirm('هل تريد حذف هذه المخالفة؟')) return;
+
+  const v = violations[idx];
+  if (v && v.id) {
+    try {
+      await fetch(`/api/violations/${v.id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.warn('Could not delete via API, removing locally:', err);
+    }
   }
+
+  violations.splice(idx, 1);
+  localStorage.setItem('karada_violations_cache', JSON.stringify(violations));
+  renderViolations();
 }
+
+/* ==============================
+   DOCS & IMAGES PREVIEW MODAL
+============================== */
+function openDocsModal(idx) {
+  const v = violations[idx];
+  if (!v) return;
+
+  const modal = document.getElementById('docsViewModal');
+  const title = document.getElementById('docsViewTitle');
+  const body = document.getElementById('docsModalBody');
+
+  title.textContent = `📎 مستندات وصور المخالفة: ${v.address}`;
+  modal.classList.remove('hidden');
+
+  let contentHtml = '';
+
+  // 1. ملف إجازة البناء
+  if (v.permit === 'yes') {
+    contentHtml += `
+      <div>
+        <div class="doc-section-title">📜 نسخة إجازة البناء</div>
+        <div style="margin-top:10px;">
+    `;
+    if (v.permitFileData) {
+      const isImg = v.permitFileData.startsWith('data:image/');
+      if (isImg) {
+        contentHtml += `
+          <div class="doc-card-item" style="max-width:320px;">
+            <img src="${v.permitFileData}" alt="إجازة البناء" class="doc-img-preview" onclick="window.open('${v.permitFileData}', '_blank')" />
+            <div class="doc-file-info">
+              <span class="doc-file-name">${v.permitFile || 'إجازة البناء'}</span>
+            </div>
+            <div class="doc-actions-row">
+              <a href="${v.permitFileData}" download="${v.permitFile || 'ijaza'}" class="doc-download-btn">⬇️ تحميل الإجازة</a>
+            </div>
+          </div>
+        `;
+      } else {
+        contentHtml += `
+          <div class="doc-card-item" style="max-width:320px;">
+            <div style="font-size:3rem;text-align:center;padding:1rem;">📄</div>
+            <div class="doc-file-info">
+              <span class="doc-file-name">${v.permitFile || 'ملف الإجازة'}</span>
+            </div>
+            <div class="doc-actions-row">
+              <a href="${v.permitFileData}" download="${v.permitFile || 'ijaza.pdf'}" class="doc-download-btn">⬇️ فتح / تحميل الملف</a>
+            </div>
+          </div>
+        `;
+      }
+    } else {
+      contentHtml += `<p style="color:var(--text3);font-size:0.9rem;">اسم الإجازة المسجل: ${v.permitFile || 'توجد إجازة مسجلة'}</p>`;
+    }
+    contentHtml += `</div></div>`;
+  }
+
+  // 2. المستندات المرفقة بالإجراءات (الصور، الوثائق، التقارير)
+  const docsList = v.docs || [];
+  contentHtml += `
+    <div>
+      <div class="doc-section-title">📁 مستندات وصور الإجراءات (${docsList.length || v.docsCount || 0})</div>
+      <div class="docs-grid" style="margin-top:10px;">
+  `;
+
+  if (docsList.length === 0) {
+    contentHtml += `<p style="color:var(--text3);font-size:0.9rem;">لا توجد مستندات إضافية مرفقة مع هذه المخالفة</p>`;
+  } else {
+    contentHtml += docsList.map(doc => {
+      const isImg = (doc.type && doc.type.startsWith('image/')) || (doc.data && doc.data.startsWith('data:image/'));
+      const src = doc.data || doc.url || '#';
+
+      if (isImg && doc.data) {
+        return `
+          <div class="doc-card-item">
+            <img src="${doc.data}" alt="${doc.name}" class="doc-img-preview" onclick="window.open('${doc.data}', '_blank')" />
+            <div class="doc-file-info">
+              <span class="doc-file-name">${doc.name}</span>
+            </div>
+            <div class="doc-actions-row">
+              <a href="${doc.data}" download="${doc.name}" class="doc-download-btn">⬇️ تحميل الصورة</a>
+            </div>
+          </div>
+        `;
+      } else {
+        return `
+          <div class="doc-card-item">
+            <div style="font-size:3rem;text-align:center;padding:1rem;">📎</div>
+            <div class="doc-file-info">
+              <span class="doc-file-name">${doc.name}</span>
+            </div>
+            <div class="doc-actions-row">
+              <a href="${src}" download="${doc.name}" class="doc-download-btn">⬇️ فتح / تحميل</a>
+            </div>
+          </div>
+        `;
+      }
+    }).join('');
+  }
+
+  contentHtml += `</div></div>`;
+  body.innerHTML = contentHtml;
+}
+
+function closeDocsModal() {
+  document.getElementById('docsViewModal').classList.add('hidden');
+}
+
+// إغلاق النافذة عند النقر خارجها
+document.getElementById('docsViewModal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeDocsModal();
+});
 
 
 /* ============================================================
@@ -830,4 +1064,5 @@ function getDeptArabic(dept) {
 // استدعاء التهيئة عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', () => {
   initAuthUI();
+  fetchViolationsFromAPI();
 });

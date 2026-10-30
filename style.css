@@ -1378,3 +1378,96 @@ input[type="file"] { display: none; }
   font-size: 0.78rem;
   border: 1px solid var(--border);
 }
+
+
+/* ============================================================
+   DOCS PREVIEW MODAL STYLES
+============================================================ */
+.docs-modal-body {
+  padding: 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.doc-section-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--teal-light);
+  border-bottom: 1.5px solid var(--border);
+  padding-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.docs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.doc-card-item {
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.doc-card-item:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.doc-img-preview {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  background: #000;
+}
+
+.doc-file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.doc-file-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.doc-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.doc-download-btn {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(61,181,212,0.1);
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.doc-download-btn:hover {
+  background: rgba(61,181,212,0.25);
+}

@@ -578,6 +578,22 @@
     </div>
   </div>
 
+  <!-- ===== DOCS PREVIEW MODAL ===== -->
+  <div id="docsViewModal" class="modal-overlay hidden">
+    <div class="modal-box modal-box-large">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <img src="logo.jpg" alt="" class="modal-logo" />
+          <h3 id="docsViewTitle">📎 مستندات وصور المخالفة</h3>
+        </div>
+        <button class="close-modal" onclick="closeDocsModal()">✕</button>
+      </div>
+      <div class="docs-modal-body" id="docsModalBody">
+        <!-- يتم عرض المستندات والصور المخزنة هنا -->
+      </div>
+    </div>
+  </div>
+
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="app.js"></script>
